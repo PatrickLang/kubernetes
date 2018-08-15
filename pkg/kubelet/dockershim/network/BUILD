@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/kubelet/apis/config:go_default_library",
+        "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
         "//pkg/kubelet/container:go_default_library",
         "//pkg/kubelet/dockershim/network/hostport:go_default_library",
         "//pkg/kubelet/dockershim/network/metrics:go_default_library",

@@ -17,26 +17,31 @@ go_library(
     deps = select({
         "@io_bazel_rules_go//go/platform:android": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:darwin": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:dragonfly": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:freebsd": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:linux": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
             "//pkg/kubelet/dockershim/network/hostport:go_default_library",
@@ -58,31 +63,37 @@ go_library(
         ],
         "@io_bazel_rules_go//go/platform:nacl": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:netbsd": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:openbsd": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:plan9": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:solaris": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:windows": [
             "//pkg/kubelet/apis/config:go_default_library",
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
             "//pkg/kubelet/container:go_default_library",
             "//pkg/kubelet/dockershim/network:go_default_library",
         ],
