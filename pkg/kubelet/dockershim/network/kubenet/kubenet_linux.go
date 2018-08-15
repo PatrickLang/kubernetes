@@ -36,6 +36,7 @@ import (
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	utilsets "k8s.io/apimachinery/pkg/util/sets"
 	kubeletconfig "k8s.io/kubernetes/pkg/kubelet/apis/config"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/network"
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/network/hostport"
@@ -379,7 +380,7 @@ func (plugin *kubenetNetworkPlugin) setup(namespace string, name string, id kube
 	return nil
 }
 
-func (plugin *kubenetNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID, annotations map[string]string) error {
+func (plugin *kubenetNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID, annotations map[string]string, dnsConfig *runtimeapi.DNSConfig) error {
 	plugin.mu.Lock()
 	defer plugin.mu.Unlock()
 
