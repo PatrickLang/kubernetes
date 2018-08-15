@@ -29,6 +29,7 @@ import (
 	utilsets "k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	kubeletconfig "k8s.io/kubernetes/pkg/kubelet/apis/config"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/network/hostport"
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/network/metrics"
@@ -63,7 +64,7 @@ type NetworkPlugin interface {
 	// SetUpPod is the method called after the infra container of
 	// the pod has been created but before the other containers of the
 	// pod are launched.
-	SetUpPod(namespace string, name string, podSandboxID kubecontainer.ContainerID, annotations map[string]string) error
+	SetUpPod(namespace string, name string, podSandboxID kubecontainer.ContainerID, annotations map[string]string, dnsConfig *runtimeapi.DNSConfig) error
 
 	// TearDownPod is the method called before a pod's infra container will be deleted
 	TearDownPod(namespace string, name string, podSandboxID kubecontainer.ContainerID) error
@@ -207,7 +208,7 @@ func (plugin *NoopNetworkPlugin) Capabilities() utilsets.Int {
 	return utilsets.NewInt()
 }
 
-func (plugin *NoopNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID, annotations map[string]string) error {
+func (plugin *NoopNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID, annotations map[string]string, dnsConfig *runtimeapi.DNSConfig) error {
 	return nil
 }
 
@@ -368,14 +369,14 @@ func (pm *PluginManager) GetPodNetworkStatus(podNamespace, podName string, id ku
 	return netStatus, nil
 }
 
-func (pm *PluginManager) SetUpPod(podNamespace, podName string, id kubecontainer.ContainerID, annotations map[string]string) error {
+func (pm *PluginManager) SetUpPod(podNamespace, podName string, id kubecontainer.ContainerID, annotations map[string]string, dnsConfig *runtimeapi.DNSConfig) error {
 	defer recordOperation("set_up_pod", time.Now())
 	fullPodName := kubecontainer.BuildPodFullName(podName, podNamespace)
 	pm.podLock(fullPodName).Lock()
 	defer pm.podUnlock(fullPodName)
 
 	glog.V(3).Infof("Calling network plugin %s to set up pod %q", pm.plugin.Name(), fullPodName)
-	if err := pm.plugin.SetUpPod(podNamespace, podName, id, annotations); err != nil {
+	if err := pm.plugin.SetUpPod(podNamespace, podName, id, annotations, dnsConfig); err != nil {
 		return fmt.Errorf("NetworkPlugin %s failed to set up pod %q network: %v", pm.plugin.Name(), fullPodName, err)
 	}
 
