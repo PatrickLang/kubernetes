@@ -37,7 +37,7 @@ var _ = Describe("[sig-network] Networking", func() {
 			The kubectl exec on the webserver container MUST reach a http port on the each of service proxy endpoints in the cluster and the request MUST be successful. Container will execute curl command to reach the service port within specified max retry limit and MUST result in reporting unique hostnames.
 		*/
 		framework.ConformanceIt("should function for intra-pod communication: http [NodeConformance]", func() {
-			config := framework.NewCoreNetworkingTestConfig(f)
+			config := framework.NewCoreNetworkingTestConfig(f, false)
 			for _, endpointPod := range config.EndpointPods {
 				config.DialFromTestContainer("http", endpointPod.Status.PodIP, framework.EndpointHttpPort, config.MaxTries, 0, sets.NewString(endpointPod.Name))
 			}
@@ -50,7 +50,7 @@ var _ = Describe("[sig-network] Networking", func() {
 			The kubectl exec on the webserver container MUST reach a udp port on the each of service proxy endpoints in the cluster and the request MUST be successful. Container will execute curl command to reach the service port within specified max retry limit and MUST result in reporting unique hostnames.
 		*/
 		framework.ConformanceIt("should function for intra-pod communication: udp [NodeConformance]", func() {
-			config := framework.NewCoreNetworkingTestConfig(f)
+			config := framework.NewCoreNetworkingTestConfig(f, false)
 			for _, endpointPod := range config.EndpointPods {
 				config.DialFromTestContainer("udp", endpointPod.Status.PodIP, framework.EndpointUdpPort, config.MaxTries, 0, sets.NewString(endpointPod.Name))
 			}
@@ -63,7 +63,7 @@ var _ = Describe("[sig-network] Networking", func() {
 			The kubectl exec on the webserver container MUST reach a http port on the each of service proxy endpoints in the cluster using a http post(protocol=tcp)  and the request MUST be successful. Container will execute curl command to reach the service port within specified max retry limit and MUST result in reporting unique hostnames.
 		*/
 		framework.ConformanceIt("should function for node-pod communication: http [NodeConformance]", func() {
-			config := framework.NewCoreNetworkingTestConfig(f)
+			config := framework.NewCoreNetworkingTestConfig(f, false)
 			for _, endpointPod := range config.EndpointPods {
 				config.DialFromNode("http", endpointPod.Status.PodIP, framework.EndpointHttpPort, config.MaxTries, 0, sets.NewString(endpointPod.Name))
 			}
@@ -76,7 +76,7 @@ var _ = Describe("[sig-network] Networking", func() {
 			The kubectl exec on the webserver container MUST reach a http port on the each of service proxy endpoints in the cluster using a http post(protocol=udp)  and the request MUST be successful. Container will execute curl command to reach the service port within specified max retry limit and MUST result in reporting unique hostnames.
 		*/
 		framework.ConformanceIt("should function for node-pod communication: udp [NodeConformance]", func() {
-			config := framework.NewCoreNetworkingTestConfig(f)
+			config := framework.NewCoreNetworkingTestConfig(f, false)
 			for _, endpointPod := range config.EndpointPods {
 				config.DialFromNode("udp", endpointPod.Status.PodIP, framework.EndpointUdpPort, config.MaxTries, 0, sets.NewString(endpointPod.Name))
 			}
