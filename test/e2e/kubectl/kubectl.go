@@ -1054,7 +1054,7 @@ metadata:
 		BeforeEach(func() {
 			By("creating the pod")
 			nsFlag = fmt.Sprintf("--namespace=%v", ns)
-			podYaml = substituteImageName(string(readTestFileOrDie("busybox-pod.yaml")))
+			podYaml = commonutils.SubstituteImageName(string(readTestFileOrDie("busybox-pod.yaml")))
 			framework.RunKubectlOrDieInput(podYaml, "create", "-f", "-", nsFlag)
 			Expect(framework.CheckPodsRunningReady(c, ns, []string{busyboxPodName}, framework.PodStartTimeout)).To(BeTrue())
 		})
