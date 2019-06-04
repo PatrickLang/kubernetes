@@ -33,6 +33,7 @@ import (
 const (
 	tcpProtocol   = "tcp"
 	npipeProtocol = "npipe"
+	unixProtocol = "unix"
 )
 
 // CreateListener creates a listener on the specified endpoint.
@@ -108,14 +109,13 @@ func parseEndpoint(endpoint string) (string, string, error) {
 	}
 }
 
-// LocalEndpoint returns the full path to a windows named pipe
+// LocalEndpoint returns the full path to a unix socket at the given endpoint
 func LocalEndpoint(path, file string) string {
-	pipePath := filepath.Join("//./pipe/", path, file)
 	u := url.URL{
-		Scheme: npipeProtocol,
-		Path:   strings.Replace(pipePath, "\\", "/", -1),
+		Scheme: unixProtocol,
+		Path:   strings.Replace(path, "\\", "/", -1),
 	}
-	return u.String()
+	return filepath.Join(u.String(), file+".sock")
 }
 
 var tickCount = syscall.NewLazyDLL("kernel32.dll").NewProc("GetTickCount64")
