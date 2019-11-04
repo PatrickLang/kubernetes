@@ -1022,6 +1022,9 @@ message ImageFilter {
 message ListImagesRequest {
     // Filter to list images.
     ImageFilter filter = 1;
+    // KEP - https://github.com/kubernetes/enhancements/blob/master/keps/sig-windows/windows-runtimeclass-support.md
+    // Support multiple runtimes or snapshotters specified through runtime_handler
+    string runtime_handler = 2;
 }
 
 // Basic information about a container image.
@@ -1085,6 +1088,9 @@ message PullImageRequest {
     AuthConfig auth = 2;
     // Config of the PodSandbox, which is used to pull image in PodSandbox context.
     PodSandboxConfig sandbox_config = 3;
+    // KEP - https://github.com/kubernetes/enhancements/blob/master/keps/sig-windows/windows-runtimeclass-support.md
+    // Support multiple runtimes or snapshotters specified through runtime_handler
+    string runtime_handler = 4;
 }
 
 message PullImageResponse {
@@ -1096,6 +1102,9 @@ message PullImageResponse {
 message RemoveImageRequest {
     // Spec of the image to remove.
     ImageSpec image = 1;
+    // KEP - https://github.com/kubernetes/enhancements/blob/master/keps/sig-windows/windows-runtimeclass-support.md
+    // Support multiple runtimes or snapshotters specified through runtime_handler
+    string runtime_handler = 2;
 }
 
 message RemoveImageResponse {}
