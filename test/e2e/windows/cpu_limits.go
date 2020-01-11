@@ -30,16 +30,12 @@ import (
 
 var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 
+	// framework.TestContext.GatherKubeSystemResourceUsageData = "true" // TODO: Or should this be GatherMetricsAfterTest
+	// framework.TestContext.GatherMetricsAfterTest = "true"
+
 	f := framework.NewDefaultFramework("cpu-resources-test-windows")
 
-	framework.TestContext.GatherKubeSystemResourceUsageData = "true"
-
 	powershellImage := imageutils.GetConfig(imageutils.BusyBox)
-
-	ginkgo.BeforeEach(func() {
-		// NOTE(patricklang): these tests are Windows specific
-		framework.SkipUnlessNodeOSDistroIs("windows")
-	})
 
 	ginkgo.Context("Container limits", func() {
 		ginkgo.It("should not be exceeded after waiting 2 minutes", func() {
@@ -53,18 +49,23 @@ var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 			ginkgo.By("Waiting 2 minutes")
 			time.Sleep(2 * time.Minute)
 			// TODO: verify resulting config
-			// for _, p := range podsDecimal {
-			// 	pod, err := f.ClientSet.CoreV1().Pods("default").Get(p.Name,
-			// 		metav1.GetOptions{})
-			// 	framework.ExpectNoError(err, "Error retrieving pod")
-			// 	framework.ExpectEqual(pod.Status, v1.PodRunning)
-			// }
-			// for _, p := range podsMilli {
-			// 	pod, err := f.ClientSet.CoreV1().Pods("default").Get(p.Name,
-			// 		metav1.GetOptions{})
-			// 	framework.ExpectNoError(err, "Error retrieving pod")
-			// 	framework.ExpectEqual(pod.Status, v1.PodRunning)
-			// }
+			ginkgo.By("Ensuring pods are still running")
+			for _, p := range podsDecimal {
+				pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Get(p.Name,
+					metav1.GetOptions{})
+				framework.ExpectNoError(err, "Error retrieving pod")
+				framework.ExpectEqual(pod.Status.Phase, v1.PodRunning)
+			}
+			for _, p := range podsMilli {
+				pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Get(p.Name,
+					metav1.GetOptions{})
+				framework.ExpectNoError(err, "Error retrieving pod")
+				framework.ExpectEqual(pod.Status.Phase, v1.PodRunning)
+			}
+			ginkgo.By("Gathering pod metrics")
+
+
+			ginkgo.By("Ensuring cpu doesn't exceed limit +/- 5%")
 		})
 	})
 })
