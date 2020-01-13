@@ -23,16 +23,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
+	"k8s.io/kubernetes/test/e2e/framework/metrics"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 
 	"github.com/onsi/ginkgo"
 )
 
 var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
-
-	// framework.TestContext.GatherKubeSystemResourceUsageData = "true" // TODO: Or should this be GatherMetricsAfterTest
-	// framework.TestContext.GatherMetricsAfterTest = "true"
-
 	f := framework.NewDefaultFramework("cpu-resources-test-windows")
 
 	powershellImage := imageutils.GetConfig(imageutils.BusyBox)
@@ -50,22 +47,36 @@ var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 			time.Sleep(2 * time.Minute)
 			// TODO: verify resulting config
 			ginkgo.By("Ensuring pods are still running")
+			var allPods [](*v1.Pod)
 			for _, p := range podsDecimal {
 				pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Get(p.Name,
 					metav1.GetOptions{})
 				framework.ExpectNoError(err, "Error retrieving pod")
 				framework.ExpectEqual(pod.Status.Phase, v1.PodRunning)
+				allPods = append(allPods, pod)
 			}
 			for _, p := range podsMilli {
 				pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Get(p.Name,
 					metav1.GetOptions{})
 				framework.ExpectNoError(err, "Error retrieving pod")
 				framework.ExpectEqual(pod.Status.Phase, v1.PodRunning)
+				allPods = append(allPods, pod)
 			}
 			ginkgo.By("Gathering pod metrics")
-
-
+			g, err := metrics.NewMetricsGrabber( f.ClientSet, nil, true, false, false, false, false)
+			framework.ExpectNoError(err, "Error creating metrics grabber")
+			metricscollection, err := g.Grab()
+			framework.ExpectNoError(err, "Error grabbing metrics")
+			framework.ExpectNotEqual(len(metricscollection.KubeletMetrics), 0, "More than 0 nodes should report metrics")
 			ginkgo.By("Ensuring cpu doesn't exceed limit +/- 5%")
+			for _, p := range allPods {
+				framework.Logf("Getting metrics from %s", p.Spec.NodeName)
+				podMetrics := metricscollection.KubeletMetrics[p.Spec.NodeName]
+				framework.Logf("Metrics dump: %v", podMetrics)
+				for k, v := range podMetrics {
+					framework.Logf("   %s = %v", k, v)
+				}
+			}
 		})
 	})
 })
