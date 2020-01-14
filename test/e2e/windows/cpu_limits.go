@@ -32,6 +32,7 @@ import (
 var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 	f := framework.NewDefaultFramework("cpu-resources-test-windows")
 
+	// The Windows 'BusyBox' image is PowerShell plus a collection of scripts and utilities to mimic common busybox commands
 	powershellImage := imageutils.GetConfig(imageutils.BusyBox)
 
 	ginkgo.Context("Container limits", func() {
@@ -42,10 +43,8 @@ var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 			ginkgo.By("Creating one pod with limit set to '500m'")
 			podsMilli := newCpuBurnPods(1, powershellImage, "500m", "1Gi")
 			f.PodClient().CreateBatch(podsMilli)
-			// TODO: verify resource usage from framework.
 			ginkgo.By("Waiting 2 minutes")
 			time.Sleep(2 * time.Minute)
-			// TODO: verify resulting config
 			ginkgo.By("Ensuring pods are still running")
 			var allPods [](*v1.Pod)
 			for _, p := range podsDecimal {
@@ -62,13 +61,11 @@ var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 				framework.ExpectEqual(pod.Status.Phase, v1.PodRunning)
 				allPods = append(allPods, pod)
 			}
-			ginkgo.By("Ensuring cpu doesn't exceed limit +/- 5%")
+			ginkgo.By("Ensuring cpu doesn't exceed limit by >5%")
 			for _, p := range allPods {
 				ginkgo.By("Gathering node summary stats")
 				nodeStats, err := e2ekubelet.GetStatsSummary(f.ClientSet, p.Spec.NodeName)
 				framework.ExpectNoError(err, "Error grabbing node summary stats")
-				framework.Logf("Dumping summary from %s: %v", p.Spec.NodeName, nodeStats)
-				// walk nodeStats.Pods[] for pod.PodRef.Name
 				found := false
 				cpuUsage := float64(0)
 				for _, pod := range nodeStats.Pods {
@@ -76,15 +73,13 @@ var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 						continue
 					}
 					cpuUsage = float64(*pod.CPU.UsageNanoCores) * 1e-9
-					// rss = float64(*pod.Memory.RSSBytes) / 1024 / 1024
-					// workingSet = float64(*pod.Memory.WorkingSetBytes) / 1024 / 1024
 					found = true
 					break
 				}
 				framework.ExpectEqual(found, true, "Found pod in stats summary")
 				framework.Logf("Pod %s usage: %v", p.Name, cpuUsage)
-				usageMatch := (.5 * .95) > cpuUsage && (.5 * 1.05) > cpuUsage
-				framework.ExpectEqual(usageMatch, true, "Cpu Usage is within +/- 5%")
+				usageMatch := (.5 * 1.05) > cpuUsage
+				framework.ExpectEqual(usageMatch, true, "Pods reported usage should not exceed limit by >5%")
 			}
 		})
 	})
