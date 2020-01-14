@@ -23,7 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
-	"k8s.io/kubernetes/test/e2e/framework/metrics"
+	e2ekubelet "k8s.io/kubernetes/test/e2e/framework/kubelet"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 
 	"github.com/onsi/ginkgo"
@@ -62,20 +62,29 @@ var _ = SIGDescribe("[Feature:Windows] Cpu Resources", func() {
 				framework.ExpectEqual(pod.Status.Phase, v1.PodRunning)
 				allPods = append(allPods, pod)
 			}
-			ginkgo.By("Gathering pod metrics")
-			g, err := metrics.NewMetricsGrabber( f.ClientSet, nil, true, false, false, false, false)
-			framework.ExpectNoError(err, "Error creating metrics grabber")
-			metricscollection, err := g.Grab()
-			framework.ExpectNoError(err, "Error grabbing metrics")
-			framework.ExpectNotEqual(len(metricscollection.KubeletMetrics), 0, "More than 0 nodes should report metrics")
 			ginkgo.By("Ensuring cpu doesn't exceed limit +/- 5%")
 			for _, p := range allPods {
-				framework.Logf("Getting metrics from %s", p.Spec.NodeName)
-				podMetrics := metricscollection.KubeletMetrics[p.Spec.NodeName]
-				framework.Logf("Metrics dump: %v", podMetrics)
-				for k, v := range podMetrics {
-					framework.Logf("   %s = %v", k, v)
+				ginkgo.By("Gathering node summary stats")
+				nodeStats, err := e2ekubelet.GetStatsSummary(f.ClientSet, p.Spec.NodeName)
+				framework.ExpectNoError(err, "Error grabbing node summary stats")
+				framework.Logf("Dumping summary from %s: %v", p.Spec.NodeName, nodeStats)
+				// walk nodeStats.Pods[] for pod.PodRef.Name
+				found := false
+				cpuUsage := float64(0)
+				for _, pod := range nodeStats.Pods {
+				 	if (pod.PodRef.Name != p.Name || pod.PodRef.Namespace != p.Namespace) {
+						continue
+					}
+					cpuUsage = float64(*pod.CPU.UsageNanoCores) * 1e-9
+					// rss = float64(*pod.Memory.RSSBytes) / 1024 / 1024
+					// workingSet = float64(*pod.Memory.WorkingSetBytes) / 1024 / 1024
+					found = true
+					break
 				}
+				framework.ExpectEqual(found, true, "Found pod in stats summary")
+				framework.Logf("Pod %s usage: %v", p.Name, cpuUsage)
+				usageMatch := (.5 * .95) > cpuUsage && (.5 * 1.05) > cpuUsage
+				framework.ExpectEqual(usageMatch, true, "Cpu Usage is within +/- 5%")
 			}
 		})
 	})
